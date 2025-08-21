@@ -12,11 +12,11 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  id, username, first_name, last_name, email, created_at, updated_at
+  id, username, first_name, last_name, email, password, created_at, updated_at
 ) VALUES (
-  ?, ?, ?, ?, ?, ?, ?
+  ?, ?, ?, ?, ?, ?, ?, ?
 )
-RETURNING id, username, first_name, last_name, email, created_at, updated_at
+RETURNING id, username, first_name, last_name, email, password, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -25,6 +25,7 @@ type CreateUserParams struct {
 	FirstName string
 	LastName  string
 	Email     string
+	Password  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -36,6 +37,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.FirstName,
 		arg.LastName,
 		arg.Email,
+		arg.Password,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -46,6 +48,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
+		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

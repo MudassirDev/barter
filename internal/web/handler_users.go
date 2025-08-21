@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/MudassirDev/barter/db/database"
+	"github.com/MudassirDev/barter/internal/auth"
 	"github.com/google/uuid"
 )
 
@@ -35,12 +36,19 @@ func (c *apiConfig) handleRegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	password, err := auth.HashPassword(req.Password)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "password doesn't match the constraints", err)
+		return
+	}
+
 	user, err := c.DB.CreateUser(context.Background(), database.CreateUserParams{
 		ID:        uuid.New(),
 		Username:  req.Username,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
+		Password:  password,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
