@@ -17,5 +17,8 @@ func CreateMux(dbConn *sql.DB) *http.ServeMux {
 	queries := database.New(dbConn)
 	apiCfg.DB = queries
 
+	mux.HandleFunc("/users/register", apiCfg.handleRegisterUser)
+	mux.HandleFunc("/users/login", apiCfg.handleLoginUser)
+
 	return mux
 }
