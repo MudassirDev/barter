@@ -4,17 +4,25 @@ import (
 	"database/sql"
 	"embed"
 	"log"
+	"net/http"
 	"os"
 
+	"github.com/MudassirDev/barter/internal/web"
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
+const (
+	DRIVER string = "libsql"
+)
+
 var (
-	DB_URL string
+	DB_URL  string
+	DB_CONN *sql.DB
 	//go:embed db/migrations/*.sql
 	embedMigrations embed.FS
+	cfg             Config
 )
 
 func init() {
@@ -29,12 +37,24 @@ func init() {
 	DB_URL = dbURL
 
 	log.Println("env variables loaded!")
+
+	log.Println("setting up the server!")
+	conn, err := sql.Open(DRIVER, dbURL)
+	if err != nil {
+		log.Fatalf("failed to make a connection with database: %v", err)
+	}
+	DB_CONN = conn
+
+	handler := web.CreateMux(conn)
+	cfg.handler = handler
+	cfg.port = port
+	log.Println("server setup done!")
 }
 
 // seperate for migrations
 func init() {
 	log.Println("making a connection to the database for migrations!")
-	conn, err := sql.Open("libsql", DB_URL)
+	conn, err := sql.Open(DRIVER, DB_URL)
 	if err != nil {
 		log.Fatalf("failed to make a connection with database: %v", err)
 	}
@@ -53,7 +73,17 @@ func init() {
 	log.Println("migrations ran successfully!")
 }
 
-func main() {}
+func main() {
+	log.Println("starting the server!")
+	defer DB_CONN.Close()
+	srv := http.Server{
+		Addr:    ":" + cfg.port,
+		Handler: cfg.handler,
+	}
+
+	log.Printf("server is listening at port :%v!\n", cfg.port)
+	log.Fatal(srv.ListenAndServe())
+}
 
 func validateEnv(variable, variableName string) {
 	if variable == "" {
