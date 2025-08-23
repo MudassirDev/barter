@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/MudassirDev/barter/internal/web"
 	"github.com/joho/godotenv"
@@ -14,7 +15,8 @@ import (
 )
 
 const (
-	DRIVER string = "libsql"
+	DRIVER     string        = "libsql"
+	EXPIRES_IN time.Duration = time.Hour * 1
 )
 
 var (
@@ -36,6 +38,9 @@ func init() {
 	validateEnv(dbURL, "DB_URL")
 	DB_URL = dbURL
 
+	JWTSecretKey := os.Getenv("JWT_SECRET_KEY")
+	validateEnv(JWTSecretKey, "JWT_SECRET_KEY")
+
 	log.Println("env variables loaded!")
 
 	log.Println("setting up the server!")
@@ -45,9 +50,10 @@ func init() {
 	}
 	DB_CONN = conn
 
-	handler := web.CreateMux(conn)
+	handler := web.CreateMux(conn, JWTSecretKey, EXPIRES_IN)
 	cfg.handler = handler
 	cfg.port = port
+
 	log.Println("server setup done!")
 }
 

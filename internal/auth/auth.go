@@ -27,6 +27,10 @@ func HashPassword(passwordString string) (string, error) {
 	return string(hashedPassword), nil
 }
 
+func VerifyPassword(password, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+}
+
 func validatePassword(password string) error {
 	length := len(password)
 	if length < 12 {

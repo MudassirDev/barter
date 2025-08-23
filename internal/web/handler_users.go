@@ -65,4 +65,62 @@ func (c *apiConfig) handleRegisterUser(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, user)
 }
 
-func (c *apiConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {}
+func (c *apiConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
+	type Request struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	var req Request
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+	if err := decoder.Decode(&req); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "internal server error", err)
+		return
+	}
+
+	dbUser, err := c.DB.GetUserWithEmail(context.Background(), req.Email)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "this user doesn't exist", err)
+		return
+	}
+
+	err = auth.VerifyPassword(req.Password, dbUser.Password)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid password", err)
+		return
+	}
+
+	id, ok := dbUser.ID.(string)
+	if !ok {
+		respondWithError(w, http.StatusInternalServerError, "failed to parse ID", err)
+		return
+	}
+
+	token, err := auth.CreateJWT(id, c.JWTSecretKey, c.ExpiresIn)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "failed to make token", err)
+		return
+	}
+
+	cookie := http.Cookie{
+		Name:     "auth",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   int(c.ExpiresIn.Seconds()),
+		Expires:  time.Now().Add(c.ExpiresIn),
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &cookie)
+
+	respondWithJSON(w, http.StatusOK, ResponseUser{
+		Username:  dbUser.Username,
+		FirstName: dbUser.FirstName,
+		LastName:  dbUser.LastName,
+		Email:     dbUser.Email,
+		ID:        dbUser.ID,
+	})
+}

@@ -5,3 +5,6 @@ INSERT INTO users (
   ?, ?, ?, ?, ?, ?, ?, ?
 )
 RETURNING *;
+
+-- name: GetUserWithEmail :one
+SELECT * FROM users WHERE email = ?;
