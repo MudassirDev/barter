@@ -42,6 +42,9 @@ func init() {
 	validateEnv(JWTSecretKey, "JWT_SECRET_KEY")
 
 	environment := os.Getenv("ENV")
+	if environment == "" {
+		environment = "development"
+	}
 
 	log.Println("env variables loaded!")
 
