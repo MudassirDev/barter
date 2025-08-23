@@ -41,6 +41,8 @@ func init() {
 	JWTSecretKey := os.Getenv("JWT_SECRET_KEY")
 	validateEnv(JWTSecretKey, "JWT_SECRET_KEY")
 
+	environment := os.Getenv("ENV")
+
 	log.Println("env variables loaded!")
 
 	log.Println("setting up the server!")
@@ -50,7 +52,7 @@ func init() {
 	}
 	DB_CONN = conn
 
-	handler := web.CreateMux(conn, JWTSecretKey, EXPIRES_IN)
+	handler := web.CreateMux(conn, JWTSecretKey, EXPIRES_IN, environment)
 	cfg.handler = handler
 	cfg.port = port
 

@@ -10,6 +10,7 @@ type apiConfig struct {
 	DB           *database.Queries
 	JWTSecretKey string
 	ExpiresIn    time.Duration
+	ENV          string
 }
 
 type ResponseUser struct {

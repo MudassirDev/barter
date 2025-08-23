@@ -72,6 +72,10 @@ func (c *apiConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req Request
+	if contentType := r.Header.Get("Content-Type"); contentType != "application/json" {
+		respondWithError(w, http.StatusBadRequest, "invalid content type, expected: application/json", fmt.Errorf("invalid content type"))
+		return
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
@@ -104,14 +108,19 @@ func (c *apiConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isSecure := false
+	if c.ENV == PRODUCT_ENV {
+		isSecure = true
+	}
+
 	cookie := http.Cookie{
-		Name:     "auth",
+		Name:     AUTH_KEY,
 		Value:    token,
 		Path:     "/",
 		MaxAge:   int(c.ExpiresIn.Seconds()),
 		Expires:  time.Now().Add(c.ExpiresIn),
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   isSecure,
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(w, &cookie)

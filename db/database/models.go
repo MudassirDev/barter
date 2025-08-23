@@ -8,6 +8,13 @@ import (
 	"time"
 )
 
+type Skill struct {
+	ID        interface{}
+	Title     string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type User struct {
 	ID        interface{}
 	Username  string
@@ -17,4 +24,9 @@ type User struct {
 	Password  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type UserSkill struct {
+	UserID  interface{}
+	SkillID interface{}
 }
