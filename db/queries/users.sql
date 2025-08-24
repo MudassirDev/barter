@@ -8,3 +8,7 @@ RETURNING *;
 
 -- name: GetUserWithEmail :one
 SELECT * FROM users WHERE email = ?;
+
+-- name: GetUsersWithAddress :many
+SELECT * FROM users
+WHERE address LIKE '%?%';

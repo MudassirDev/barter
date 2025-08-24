@@ -16,7 +16,7 @@ INSERT INTO users (
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?
 )
-RETURNING id, username, first_name, last_name, email, password, created_at, updated_at
+RETURNING id, username, first_name, last_name, email, password, created_at, updated_at, address
 `
 
 type CreateUserParams struct {
@@ -51,12 +51,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Address,
 	)
 	return i, err
 }
 
 const getUserWithEmail = `-- name: GetUserWithEmail :one
-SELECT id, username, first_name, last_name, email, password, created_at, updated_at FROM users WHERE email = ?
+SELECT id, username, first_name, last_name, email, password, created_at, updated_at, address FROM users WHERE email = ?
 `
 
 func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, error) {
@@ -71,6 +72,45 @@ func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, err
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Address,
 	)
 	return i, err
+}
+
+const getUsersWithAddress = `-- name: GetUsersWithAddress :many
+SELECT id, username, first_name, last_name, email, password, created_at, updated_at, address FROM users
+WHERE address LIKE '%?%'
+`
+
+func (q *Queries) GetUsersWithAddress(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersWithAddress)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.Password,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Address,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

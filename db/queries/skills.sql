@@ -19,5 +19,7 @@ SELECT * FROM skills
 WHERE title = ?;
 
 -- name: GetSkillsByUserID :many
-SELECT * FROM user_skills
-WHERE user_id = ?;
+SELECT *
+FROM user_skills
+INNER JOIN skills ON skills.id = user_skills.skill_id
+WHERE user_skills.user_id = ?;
