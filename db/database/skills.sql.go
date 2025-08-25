@@ -82,20 +82,38 @@ func (q *Queries) GetSkillByTitle(ctx context.Context, title string) (Skill, err
 }
 
 const getSkillsByUserID = `-- name: GetSkillsByUserID :many
-SELECT user_id, skill_id FROM user_skills
-WHERE user_id = ?
+SELECT user_id, skill_id, id, title, created_at, updated_at
+FROM user_skills
+INNER JOIN skills ON skills.id = user_skills.skill_id
+WHERE user_skills.user_id = ?
 `
 
-func (q *Queries) GetSkillsByUserID(ctx context.Context, userID interface{}) ([]UserSkill, error) {
+type GetSkillsByUserIDRow struct {
+	UserID    interface{}
+	SkillID   interface{}
+	ID        interface{}
+	Title     string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (q *Queries) GetSkillsByUserID(ctx context.Context, userID interface{}) ([]GetSkillsByUserIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getSkillsByUserID, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UserSkill
+	var items []GetSkillsByUserIDRow
 	for rows.Next() {
-		var i UserSkill
-		if err := rows.Scan(&i.UserID, &i.SkillID); err != nil {
+		var i GetSkillsByUserIDRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.SkillID,
+			&i.ID,
+			&i.Title,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -79,11 +79,11 @@ func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, err
 
 const getUsersWithAddress = `-- name: GetUsersWithAddress :many
 SELECT id, username, first_name, last_name, email, password, created_at, updated_at, address FROM users
-WHERE address LIKE '%?%'
+WHERE address LIKE ?
 `
 
-func (q *Queries) GetUsersWithAddress(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsersWithAddress)
+func (q *Queries) GetUsersWithAddress(ctx context.Context, address interface{}) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersWithAddress, address)
 	if err != nil {
 		return nil, err
 	}

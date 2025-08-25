@@ -11,4 +11,4 @@ SELECT * FROM users WHERE email = ?;
 
 -- name: GetUsersWithAddress :many
 SELECT * FROM users
-WHERE address LIKE '%?%';
+WHERE address LIKE ?;
