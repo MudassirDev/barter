@@ -24,7 +24,7 @@ type User struct {
 	Password  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Address   interface{}
+	City      interface{}
 }
 
 type UserSkill struct {

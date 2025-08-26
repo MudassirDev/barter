@@ -16,7 +16,7 @@ INSERT INTO users (
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?
 )
-RETURNING id, username, first_name, last_name, email, password, created_at, updated_at, address
+RETURNING id, username, first_name, last_name, email, password, created_at, updated_at, city
 `
 
 type CreateUserParams struct {
@@ -51,13 +51,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Address,
+		&i.City,
 	)
 	return i, err
 }
 
 const getUserWithEmail = `-- name: GetUserWithEmail :one
-SELECT id, username, first_name, last_name, email, password, created_at, updated_at, address FROM users WHERE email = ?
+SELECT id, username, first_name, last_name, email, password, created_at, updated_at, city FROM users WHERE email = ?
 `
 
 func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, error) {
@@ -72,18 +72,18 @@ func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, err
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Address,
+		&i.City,
 	)
 	return i, err
 }
 
-const getUsersWithAddress = `-- name: GetUsersWithAddress :many
-SELECT id, username, first_name, last_name, email, password, created_at, updated_at, address FROM users
-WHERE address LIKE ?
+const getUsersWithCity = `-- name: GetUsersWithCity :many
+SELECT id, username, first_name, last_name, email, password, created_at, updated_at, city FROM users
+WHERE city LIKE ?
 `
 
-func (q *Queries) GetUsersWithAddress(ctx context.Context, address interface{}) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsersWithAddress, address)
+func (q *Queries) GetUsersWithCity(ctx context.Context, city interface{}) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersWithCity, city)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (q *Queries) GetUsersWithAddress(ctx context.Context, address interface{}) 
 			&i.Password,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Address,
+			&i.City,
 		); err != nil {
 			return nil, err
 		}

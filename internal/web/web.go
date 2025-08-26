@@ -27,10 +27,11 @@ func CreateMux(dbConn *sql.DB, secretKey string, expires_in time.Duration, env s
 	apiCfg.ExpiresIn = expires_in
 	apiCfg.ENV = env
 
-	mux.HandleFunc("POST /users/register", apiCfg.handleRegisterUser)
-	mux.HandleFunc("POST /users/login", apiCfg.handleLoginUser)
+	mux.HandleFunc("POST /api/users/register", apiCfg.handleRegisterUser)
+	mux.HandleFunc("POST /api/users/login", apiCfg.handleLoginUser)
+	mux.HandleFunc("POST /api/search/skills", apiCfg.handleSearch)
 
-	mux.Handle("POST /skills/create", apiCfg.authMiddleware(apiCfg.handleCreateSkill()))
+	mux.Handle("POST /api/skills/create", apiCfg.authMiddleware(apiCfg.handleCreateSkill()))
 
 	return mux
 }

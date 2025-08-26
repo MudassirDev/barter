@@ -9,6 +9,6 @@ RETURNING *;
 -- name: GetUserWithEmail :one
 SELECT * FROM users WHERE email = ?;
 
--- name: GetUsersWithAddress :many
+-- name: GetUsersWithCity :many
 SELECT * FROM users
-WHERE address LIKE ?;
+WHERE city LIKE ?;
